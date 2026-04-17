@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إمبراطورية علي | التحكم المطلق</title>
+    <style>
+        :root { --gold: #d4af37; --bg: #050505; --card: #0d0d0d; --white: #fff; --red: #ff3e3e; --green: #28a745; --border: #222; }
+        * { box-sizing: border-box; transition: 0.3s; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--white); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 280px; background: #000; border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+        .nav-link { background: none; border: none; color: #666; padding: 12px; text-align: right; cursor: pointer; border-radius: 10px; width: 100%; font-weight: bold; display: none; margin-bottom: 5px; font-size: 0.95rem; }
+        .nav-link.active { background: #111; color: var(--gold); border-right: 4px solid var(--gold); }
+        .show { display: block !important; }
+
+        /* Main Content */
+        .main { flex: 1; padding: 25px; overflow-y: auto; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--card); padding: 20px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, textarea, select { width: 100%; padding: 12px; background: #000; border: 1px solid #222; color: #fff; border-radius: 10px; margin: 8px 0; outline: none; }
+        input:focus { border-color: var(--gold); }
+        .btn { border: none; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; margin: 5px 0; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn-green { background: var(--green); color: #fff; }
+
+        /* Permissions Grid */
+        .perm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #161616; padding: 15px; border-radius: 12px; margin: 10px 0; border: 1px dashed #333; }
+        .perm-grid label { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        /* Chat System */
+        .chat-box { height: 250px; background: #000; border: 1px solid #222; border-radius: 12px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 10px; max-width: 85%; font-size: 0.9rem; position: relative; }
+        .msg-staff { align-self: flex-start; background: #1a1a1a; border-right: 3px solid var(--gold); }
+        .msg-user { align-self: flex-end; background: var(--gold); color: #000; }
+
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: #0a0a0a; padding: 40px; border-radius: 25px; border: 1px solid var(--gold); width: 380px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color: var(--gold); margin-bottom: 5px;">نظام الإمبراطورية</h2>
+            <p style="color: #666; font-size: 0.8rem; margin-bottom: 20px;">يرجى تسجيل الدخول للمتابعة</p>
+            <input type="text" id="l-user" placeholder="الاسم المستعار">
+            <input type="password" id="l-pass" placeholder="كلمة المرور (اختياري للزبائن)">
+            <button class="btn btn-gold" onclick="auth()">دخول النظام</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div style="text-align:center; padding-bottom:20px; border-bottom:1px solid #111; margin-bottom:20px;">
+            <strong id="my-name" style="font-size: 1.2rem;">--</strong><br>
+            <small id="my-role" style="color: var(--gold); letter-spacing: 1px;">--</small>
+        </div>
+        
+        <button id="n-notif" class="nav-link show" onclick="go('notif')">🔔 التنبيهات</button>
+        <button id="n-apply" class="nav-link show" onclick="go('apply')">📝 تقديم طلب</button>
+        <button id="n-tkt" class="nav-link show" onclick="go('tkt')">🎟️ التذاكر والشات</button>
+
+        <button id="n-apps" class="nav-link" onclick="go('apps')">📩 مراجعة الطلبات</button>
+        <button id="n-staff" class="nav-link" onclick="go('staff')">👥 إدارة الطاقم</button>
+        <button id="n-roles" class="nav-link" onclick="go('roles')">👑 لوحة الأونر</button>
+        
+        <button class="btn" style="margin-top: auto; background: #111; color: #555;" onclick="location.reload()">تسجيل خروج</button>
+    </div>
+
+    <div class="main">
+        <div id="p-roles" class="page">
+            <h2>👑 لوحة التحكم المطلقة (أونر فقط)</h2>
+            
+            <div class="card">
+                <h3>⚡ توظيف مباشر وسريع</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="h-n" placeholder="اسم الشخص">
+                    <input type="text" id="h-p" placeholder="كلمة المرور">
+                </div>
+                <select id="h-r-select"></select>
+                <button class="btn btn-green" onclick="directHire()">توظيف العضو فوراً</button>
+            </div>
+
+            <div class="card">
+                <h3 id="role-form-title">🛠️ إنشاء / تعديل رتبة</h3>
+                <input type="text" id="ro-n" placeholder="اسم الرتبة (مثال: Admin)">
+                <div class="perm-grid">
+                    <label><input type="checkbox" id="ro_tkt"> 1. وصول للتذاكر</label>
+                    <label><input type="checkbox" id="ro_apps"> 2. مراجعة التقديم</label>
+                    <label><input type="checkbox" id="ro_down"> 3. تخفيض رتبة</label>
+                    <label><input type="checkbox" id="ro_up"> 4. ترقية موظف</label>
+                    <label><input type="checkbox" id="ro_fire"> 5. فصل نهائي</label>
+                    <label><input type="checkbox" id="ro_pass"> 6. كشف كلمات السر</label>
+                </div>
+                <button class="btn btn-gold" onclick="saveRole()">حفظ بيانات الرتبة</button>
+            </div>
+
+            <h3>📊 الرتب الحالية في النظام</h3>
+            <div id="roles-list-render"></div>
+        </div>
+
+        <div id="p-staff" class="page">
+            <h2>👥 إدارة الطاقم الإداري</h2>
+            <div id="staff-render"></div>
+        </div>
+
+        <div id="p-apps" class="page">
+            <h2>📩 طلبات التوظيف (مراجعة)</h2>
+            <div id="apps-render"></div>
+        </div>
+
+        <div id="p-notif" class="page active">
+            <h2>🔔 آخر التنبيهات وأخبار القبول</h2>
+            <div id="notif-render"></div>
+        </div>
+
+        <div id="p-apply" class="page">
+            <h2>📝 استمارة الانضمام للطاقم</h2>
+            <div class="card" id="apply-form-container">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="text" id="ap-name" placeholder="اسمك الكامل" readonly>
+                    <input type="text" id="ap-country" placeholder="اسم بلدك">
+                </div>
+                <input type="text" id="ap-phone" placeholder="رقم هاتفك">
+                <textarea id="ap-exp" rows="5" placeholder="اكتب خبراتك السابقة بالتفصيل..."></textarea>
+                <button class="btn btn-gold" onclick="submitApp()">إرسال الطلب للمراجعة</button>
+            </div>
+            <div id="apply-success" class="card" style="display:none; text-align:center; border-color: var(--gold);">
+                <h3 style="color: var(--gold);">تم الإرسال بنجاح!</h3>
+                <p>طلبك قيد المراجعة، تابع صفحة التنبيهات باستمرار.</p>
+            </div>
+        </div>
+
+        <div id="p-tkt" class="page">
+            <h2>🎟️ نظام التذاكر والدعم المباشر</h2>
+            <button class="btn btn-gold" id="btn-new-tkt" style="display:none; margin-bottom: 15px;" onclick="openTkt()">فتح تذكرة جديدة +</button>
+            <div id="tkt-render"></div>
+        </div>
+    </div>
+
+    <script>
+        const OWNER_SECRET = "1122334455"; // كود دخول الأونر
+        let db = {
+            me: null,
+            staff: JSON.parse(localStorage.getItem('ali_final_st')) || [],
+            roles: JSON.parse(localStorage.getItem('ali_final_ro')) || [],
+            tkts: JSON.parse(localStorage.getItem('ali_final_tk')) || [],
+            apps: JSON.parse(localStorage.getItem('ali_final_ap')) || [],
+            notifs: JSON.parse(localStorage.getItem('ali_final_nt')) || []
+        };
+
+        function sync() {
+            localStorage.setItem('ali_final_st', JSON.stringify(db.staff));
+            localStorage.setItem('ali_final_ro', JSON.stringify(db.roles));
+            localStorage.setItem('ali_final_tk', JSON.stringify(db.tkts));
+            localStorage.setItem('ali_final_ap', JSON.stringify(db.apps));
+            localStorage.setItem('ali_final_nt', JSON.stringify(db.notifs));
+            render();
+        }
+
+        function auth() {
+            const u = document.getElementById('l-user').value;
+            const p = document.getElementById('l-pass').value;
+            if(!u) return alert("يرجى إدخال الاسم");
+            
+            let role = "زبون";
+            if(p === OWNER_SECRET) role = "أونر";
+            else if(p) {
+                const s = db.staff.find(x => x.name === u && x.pass === p);
+                if(s) role = s.role; else return alert("بيانات الإدارة خاطئة");
+            }
+            
+            db.me = { name: u, role: role };
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('ap-name').value = u;
+            sync();
+        }
+
+        function getMyPerms() {
+            if(db.me.role === "أونر") return {tkt:1, apps:1, down:1, up:1, fire:1, pass:1, owner:1};
+            return db.roles.find(r => r.name === db.me.role) || {};
+        }
+
+        function render() {
+            const p = getMyPerms();
+            const isZboon = db.me.role === "زبون";
+
+            document.getElementById('my-name').innerText = db.me.name;
+            document.getElementById('my-role').innerText = db.me.role;
+
+            // روابط القائمة الجانبية
+            document.getElementById('n-apply').style.display = isZboon ? "block" : "none";
+            document.getElementById('n-apps').style.display = p.apps ? "block" : "none";
+            document.getElementById('n-staff').style.display = !isZboon ? "block" : "none";
+            document.getElementById('n-roles').style.display = p.owner ? "block" : "none";
+            document.getElementById('btn-new-tkt').style.display = isZboon ? "block" : "none";
+
+            // رندر التنبيهات
+            const myN = db.notifs.filter(n => n.to === db.me.name);
+            document.getElementById('notif-render').innerHTML = myN.map(n => `<div class="card" style="border-right:5px solid var(--gold)">${n.txt}</div>`).join('') || "لا يوجد أخبار حالياً";
+
+            // رندر التذاكر (الزبون يرى تذكرته فقط، الإدارة حسب الصلاحية)
+            document.getElementById('tkt-render').innerHTML = db.tkts.filter(t => p.tkt || t.u === db.me.name).map(t => `
+                <div class="card">
+                    <b>صاحب التذكرة: ${t.u}</b>
+                    <div class="chat-box">${t.chat.map(m => `<div class="msg ${m.r==='زبون'?'msg-user':'msg-staff'}"><b>${m.n}:</b> ${m.txt}</div>`).join('')}</div>
+                    <div style="display:flex; gap:5px; margin-top:10px;"><input type="text" id="in-${t.id}" placeholder="اكتب رسالتك..."><button class="btn btn-gold" style="width:80px" onclick="sendMsg(${t.id})">إرسال</button></div>
+                    ${!isZboon ? `<button class="btn btn-red" style="margin-top:10px" onclick="closeTkt(${t.id})">إغلاق التذكرة</button>` : ''}
+                </div>
+            `).join('') || "لا توجد تذاكر حالية";
+
+            // رندر الإدارة (ترقية، تخفيض، فصل)
+            document.getElementById('staff-render').innerHTML = db.staff.map((s, i) => `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between">
+                        <b>الاسم: ${s.name}</b>
+                        <span style="color:var(--gold)">الرتبة: ${s.role}</span>
+                    </div>
+                    ${p.pass ? `<p style="color:#555">كلمة السر: <span style="color:#fff">${s.pass}</span></p>` : ''}
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        ${p.up ? `<button class="btn btn-green" style="font-size:12px" onclick="manageStaff(${i}, 'up')">ترقية ⬆️</button>` : ''}
+                        ${p.down ? `<button class="btn" style="background:#444; color:#fff; font-size:12px" onclick="manageStaff(${i}, 'down')">تخفيض ⬇️</button>` : ''}
+                        ${p.fire ? `<button class="btn btn-red" style="font-size:12px" onclick="manageStaff(${i}, 'fire')">فصل ❌</button>` : ''}
+                    </div>
+                </div>
+            `).join('') || "لا يوجد موظفين حالياً";
+
+            // لوحة الأونر (عرض الرتب)
+            if(p.owner) {
+                document.getElementById('roles-list-render').innerHTML = db.roles.map((r, i) => `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div><b>${r.name}</b> <small style="color:#555"> (صلاحيات: ${Object.values(r).filter(v=>v===true).length})</small></div>
+                        <div style="display:flex; gap:5px">
+                            <button class="btn btn-gold" style="width:70px; padding:5px" onclick="editRole(${i})">تعديل</button>
+                            <button class="btn btn-red" style="width:70px; padding:5px" onclick="db.roles.splice(${i},1);sync()">حذف</button>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('h-r-select').innerHTML = db.roles.map(r => `<option>${r.name}</option>`).join('');
+            }
+
+            // مراجعة الطلبات
+            document.getElementById('apps-render').innerHTML = db.apps.map((a, i) => `
+                <div class="card">
+                    <p><b>المتقدم:</b> ${a.n} | <b>البلد:</b> ${a.c}</p>
+                    <p><b>الهاتف:</b> ${a.p}</p>
+                    <p><b>الخبرات:</b> ${a.e}</p>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn btn-green" onclick="acceptApp(${i})">قبول وتوظيف</button>
+                        <button class="btn btn-red" onclick="db.apps.splice(${i},1);sync()">رفض</button>
+                    </div>
+                </div>
+            `).join('') || "لا توجد طلبات جديدة";
+
+            // حالة التقديم للزبون
+            if(isZboon) {
+                const hasApp = db.apps.find(a => a.n === db.me.name);
+                document.getElementById('apply-form-container').style.display = hasApp ? "none" : "block";
+                document.getElementById('apply-success').style.display = hasApp ? "block" : "none";
+            }
+        }
+
+        // --- وظائف النظام ---
+
+        function saveRole() {
+            const name = document.getElementById('ro-n').value;
+            if(!name) return alert("أدخل اسم الرتبة");
+            const data = {
+                name: name,
+                tkt: document.getElementById('ro_tkt').checked,
+                apps: document.getElementById('ro_apps').checked,
+                down: document.getElementById('ro_down').checked,
+                up: document.getElementById('ro_up').checked,
+                fire: document.getElementById('ro_fire').checked,
+                pass: document.getElementById('ro_pass').checked
+            };
+            const idx = db.roles.findIndex(r => r.name === name);
+            if(idx > -1) db.roles[idx] = data; else db.roles.push(data);
+            alert("تم حفظ الرتبة"); sync();
+        }
+
+        function editRole(i) {
+            const r = db.roles[i];
+            document.getElementById('ro-n').value = r.name;
+            document.getElementById('ro_tkt').checked = r.tkt;
+            document.getElementById('ro_apps').checked = r.apps;
+            document.getElementById('ro_down').checked = r.down;
+            document.getElementById('ro_up').checked = r.up;
+            document.getElementById('ro_fire').checked = r.fire;
+            document.getElementById('ro_pass').checked = r.pass;
+            document.getElementById('role-form-title').innerText = "🛠️ تعديل رتبة: " + r.name;
+        }
+
+        function directHire() {
+            const n = document.getElementById('h-n').value;
+            const p = document.getElementById('h-p').value;
+            const r = document.getElementById('h-r-select').value;
+            if(!n || !p || !r) return alert("أكمل البيانات");
+            db.staff.push({ name: n, pass: p, role: r });
+            alert("تم التوظيف بنجاح"); sync();
+        }
+
+        function manageStaff(idx, action) {
+            const s = db.staff[idx];
+            const currentRoleIdx = db.roles.findIndex(r => r.name === s.role);
+            
+            if(action === 'fire') {
+                if(confirm("فصل " + s.name + "؟")) db.staff.splice(idx, 1);
+            } else if(action === 'up') {
+                if(currentRoleIdx > 0) s.role = db.roles[currentRoleIdx - 1].name;
+            } else if(action === 'down') {
+                if(currentRoleIdx < db.roles.length - 1) s.role = db.roles[currentRoleIdx + 1].name;
+            }
+            sync();
+        }
+
+        function submitApp() {
+            const app = {
+                n: db.me.name,
+                c: document.getElementById('ap-country').value,
+                p: document.getElementById('ap-phone').value,
+                e: document.getElementById('ap-exp').value
+            };
+            if(!app.c || !app.p || !app.e) return alert("أكمل بيانات التقديم");
+            db.apps.push(app);
+            sync();
+        }
+
+        function acceptApp(i) {
+            if(db.roles.length === 0) return alert("يجب إنشاء رتبة واحدة على الأقل أولاً");
+            const a = db.apps[i];
+            const lastRole = db.roles[db.roles.length-1].name;
+            db.staff.push({ name: a.n, role: lastRole, pass: "123" });
+            db.notifs.unshift({ to: a.n, txt: `مبروك ${a.n}! تم قبولك برتبة ${lastRole}. كلمة سرك هي 123` });
+            db.apps.splice(i, 1);
+            sync();
+        }
+
+        function sendMsg(id) {
+            const t = db.tkts.find(x => x.id === id);
+            const v = document.getElementById(`in-${id}`).value;
+            if(!v) return;
+            t.chat.push({ n: db.me.name, r: (db.me.role==='زبون'?'زبون':'إدارة'), txt: v });
+            if(db.me.role !== 'زبون') db.notifs.unshift({ to: t.u, txt: "هناك رد جديد على تذكرتك الآن" });
+            document.getElementById(`in-${id}`).value = ""; sync();
+        }
+
+        function openTkt() { db.tkts.unshift({ id: Date.now(), u: db.me.name, chat: [] }); sync(); }
+        function closeTkt(id) { db.tkts = db.tkts.filter(t => t.id !== id); sync(); }
+
+        function go(p) {
+            document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+            document.getElementById('p-' + p).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(x => x.classList.remove('active'));
+            document.getElementById('n-' + p).classList.add('active');
+        }
+    </script>
+</body>
+</html>
